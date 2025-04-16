@@ -1,10 +1,5 @@
-import { Login } from "@/components/Login";
+import { Landing } from "@/components/home/Landing";
 
-export default async function Home({
-  searchParams,
-}: {
-  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
-}) {
-  const wantsMagicLink = (await searchParams).magicLink === "yes";
-  return <Login isPasswordLogin={!wantsMagicLink} />;
+export default function Home() {
+  return <Landing />;
 }

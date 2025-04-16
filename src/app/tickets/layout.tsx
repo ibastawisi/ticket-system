@@ -1,5 +1,5 @@
-import Nav from "@/components/tickets/Nav";
-import TenantName from "@/components/tickets/TenantName";
+import Nav from "@/components/layout/Nav";
+import TenantName from "@/components/layout/TenantName";
 
 export default function TicketsLayout({
   children,

@@ -1,15 +1,12 @@
 import { Database } from "@/types/database";
 import { createServerClient } from "@supabase/ssr";
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse, type NextRequest } from "next/server";
 
-export const getSupabaseMiddlewareClient = ({
-  request,
-}: {
-  request: NextRequest;
-}) => {
-  const response = {                                                                          
-    value: NextResponse.next({ request: request }),
-  };
+export async function updateSession(request: NextRequest) {
+  let supabaseResponse = NextResponse.next({
+    request,
+  });
+
   const supabase = createServerClient<Database>(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
@@ -19,18 +16,40 @@ export const getSupabaseMiddlewareClient = ({
           return request.cookies.getAll();
         },
         setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value, options }) => {
-            request.cookies.set(name, value);
-          });
-          response.value = NextResponse.next({
+          cookiesToSet.forEach(({ name, value }) =>
+            request.cookies.set(name, value)
+          );
+          supabaseResponse = NextResponse.next({
             request,
           });
-          cookiesToSet.forEach(({ name, value, options }) => {
-            response.value.cookies.set(name, value, options);
-          });
+          cookiesToSet.forEach(({ name, value, options }) =>
+            supabaseResponse.cookies.set(name, value, options)
+          );
         },
       },
     }
   );
-  return { supabase, response };
-};
+
+  const session = await supabase.auth.getSession();
+  const pathname = request.nextUrl.pathname;
+  const user = session.data?.session?.user;
+
+  if (
+    !user &&
+    pathname !== "/" &&
+    !pathname.startsWith("/login") &&
+    !pathname.startsWith("/auth")
+  ) {
+    const url = request.nextUrl.clone();
+    url.pathname = "/login";
+    return NextResponse.redirect(url);
+  }
+
+  if (user && pathname === "/") {
+    const url = request.nextUrl.clone();
+    url.pathname = "/tickets";
+    return NextResponse.redirect(url);
+  }
+
+  return supabaseResponse;
+}
