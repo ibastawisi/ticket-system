@@ -2,6 +2,8 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { NextResponse } from "next/server";
 import nodemailer from "nodemailer";
 
+const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL;
+
 export async function POST(request: Request) {
   const formData = await request.formData();
   const email = formData.get("email") as string;
@@ -13,7 +15,7 @@ export async function POST(request: Request) {
   if (error) {
     const message = "Make sure the email address is valid";
     return NextResponse.redirect(
-      new URL(`/login?type=magic-link&error=${message}`, request.url),
+      new URL(`/login?type=magic-link&error=${message}`, BASE_URL),
       { status: 302 }
     );
   }
@@ -23,13 +25,13 @@ export async function POST(request: Request) {
     await supabase.auth.admin.deleteUser(data.user.id);
     const message = "This email is not associated with an account";
     return NextResponse.redirect(
-      new URL(`/login?type=magic-link&error=${message}`, request.url),
+      new URL(`/login?type=magic-link&error=${message}`, BASE_URL),
       { status: 302 }
     );
   }
   const constructedLink = new URL(
     `/auth/verify?hashed_token=${hashed_token}`,
-    request.url
+    BASE_URL
   );
   const transporter = nodemailer.createTransport({
     host: process.env.SMTP_HOST || "localhost",
@@ -51,7 +53,7 @@ export async function POST(request: Request) {
   });
   const message = "Check your email for the magic link";
   return NextResponse.redirect(
-    new URL(`/login?type=magic-link&success=${message}`, request.url),
+    new URL(`/login?type=magic-link&success=${message}`, BASE_URL),
     {
       status: 302,
     }

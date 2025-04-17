@@ -1,6 +1,8 @@
 import { createClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
 
+const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL;
+
 export async function POST(request: Request) {
   const formData = await request.formData();
   const email = formData.get("email") as string;
@@ -14,11 +16,11 @@ export async function POST(request: Request) {
   if (error || !userData) {
     const message = "Login failed. Please check your credentials.";
     return NextResponse.redirect(
-      new URL(`/login?error=${message}`, request.url),
+      new URL(`/login?error=${message}`, BASE_URL),
       { status: 302 }
     );
   }
-  return NextResponse.redirect(new URL("/tickets", request.url), {
+  return NextResponse.redirect(new URL("/tickets", BASE_URL), {
     status: 302,
   });
 }
