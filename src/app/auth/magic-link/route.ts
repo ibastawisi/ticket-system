@@ -32,11 +32,16 @@ export async function POST(request: Request) {
     request.url
   );
   const transporter = nodemailer.createTransport({
-    host: "localhost",
-    port: 54325,
+    host: process.env.SMTP_HOST || "localhost",
+    port: Number(process.env.SMTP_PORT) || 54325,
+    secure: process.env.SMTP_SECURE === "true",
+    auth: {
+      user: process.env.SMTP_USER,
+      pass: process.env.SMTP_PASS,
+    },
   });
   await transporter.sendMail({
-    from: "auth@tms.ibastawisi.tech",
+    from: "tms@ibastawisi.tech",
     to: email,
     subject: "Magic Link",
     html: `

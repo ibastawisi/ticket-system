@@ -24,13 +24,18 @@ export async function POST(request: Request) {
     request.url
   );
   const transporter = nodemailer.createTransport({
-    host: "localhost",
-    port: 54325,
+    host: process.env.SMTP_HOST || "localhost",
+    port: Number(process.env.SMTP_PORT) || 54325,
+    secure: process.env.SMTP_SECURE === "true",
+    auth: {
+      user: process.env.SMTP_USER,
+      pass: process.env.SMTP_PASS,
+    },
   });
   await transporter.sendMail({
-    from: "auth@tms.ibastawisi.tech",
+    from: "tms@ibastawisi.tech",
     to: email,
-    subject: "Magic Link",
+    subject: "Password Reset",
     html: `
     <h1>Hi there, this is a your reset password email!</h1>
     <p>We received a request to reset your password. If you didn't make this request, just ignore this email.</p>
