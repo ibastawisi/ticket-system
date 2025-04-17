@@ -10,7 +10,6 @@ const nextConfig: NextConfig = {
       destination: "/auth/login",
       permanent: true,
     },
-    
     {
       source: "/logout",
       destination: "/auth/logout",

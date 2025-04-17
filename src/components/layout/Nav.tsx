@@ -21,7 +21,7 @@ export default function Nav() {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === "SIGNED_OUT") {
-        router.push("/");
+        router.push("/login");
       }
     });
     return () => subscription.unsubscribe();

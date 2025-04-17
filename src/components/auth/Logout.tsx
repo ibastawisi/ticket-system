@@ -11,7 +11,7 @@ export function LogoutButton(props: React.ComponentProps<typeof Button>) {
     event.preventDefault();
     const supabase = createClient();
     await supabase.auth.signOut();
-    router.push("/");
+    router.push("/login");
   };
 
   return (
