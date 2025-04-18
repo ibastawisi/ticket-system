@@ -1,10 +1,13 @@
 import { createAdminClient } from "@/lib/supabase/admin";
+import { tenantUrl } from "@/utils/url";
 import { NextResponse } from "next/server";
 import nodemailer from "nodemailer";
 
-const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL;
-
-export async function POST(request: Request) {
+export async function POST(
+  request: Request,
+  { params }: { params: Promise<{ tenant: string }> }
+) {
+  const { tenant } = await params;
   const formData = await request.formData();
   const email = formData.get("email") as string;
   const supabase = await createAdminClient();
@@ -14,16 +17,17 @@ export async function POST(request: Request) {
   });
   if (error) {
     const message = "Make sure the email address is valid";
-    return NextResponse.redirect(
-      new URL(`/login?type=password-reset&error=${message}`, BASE_URL),
-      { status: 302 }
+    const url = tenantUrl(
+      `/login?type=password-reset&error=${message}`,
+      tenant
     );
+    return NextResponse.redirect(url, { status: 302 });
   }
   const { hashed_token } = data.properties;
 
-  const constructedLink = new URL(
+  const constructedLink = tenantUrl(
     `/auth/verify?hashed_token=${hashed_token}&type=password-reset`,
-    BASE_URL
+    tenant
   );
   const transporter = nodemailer.createTransport({
     host: process.env.SMTP_HOST || "localhost",
@@ -46,7 +50,7 @@ export async function POST(request: Request) {
   });
   const message = "Check your email for the reset password link";
   return NextResponse.redirect(
-    new URL(`/login?type=password-reset&success=${message}`, BASE_URL),
+    tenantUrl(`/login?type=password-reset&success=${message}`, tenant),
     {
       status: 302,
     }

@@ -1,15 +1,18 @@
 import { createClient } from "@/lib/supabase/server";
+import { tenantUrl } from "@/utils/url";
 import { NextResponse } from "next/server";
 
-const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL;
-
-export async function GET(request: Request) {
+export async function GET(
+  request: Request,
+  { params }: { params: Promise<{ tenant: string }> }
+) {
+  const { tenant } = await params;
   const { searchParams } = new URL(request.url);
   const type = searchParams.get("type");
   const hashed_token = searchParams.get("hashed_token");
   if (!hashed_token) {
     return NextResponse.redirect(
-      new URL(`/login?type=password-reset&error=Invalid token`, BASE_URL),
+      tenantUrl(`/login?type=password-reset&error=Invalid token`, tenant),
       { status: 302 }
     );
   }
@@ -20,14 +23,14 @@ export async function GET(request: Request) {
   });
   if (error) {
     return NextResponse.redirect(
-      new URL(`/login?type=password-reset&error=Invalid token`, BASE_URL),
+      tenantUrl(`/login?type=password-reset&error=Invalid token`, tenant)
     );
   } else {
-  if (type === "password-reset") {
-    return NextResponse.redirect(
-      new URL(`/auth/update-password`, BASE_URL),
-      { status: 302 }
-    );
+    if (type === "password-reset") {
+      return NextResponse.redirect(tenantUrl(`/auth/update-password`, tenant), {
+        status: 302,
+      });
+    }
+    return NextResponse.redirect(tenantUrl("/tickets", tenant));
   }
-    return NextResponse.redirect(new URL("/tickets", BASE_URL),);
-  }}
+}

@@ -10,8 +10,15 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
+import { tenantPath } from "@/utils/url";
 
-export function TicketList({ tickets }: { tickets: Ticket[] }) {
+export function TicketList({
+  tickets,
+  tenant,
+}: {
+  tickets: Ticket[];
+  tenant: string;
+}) {
   return (
     <div className="rounded-md border">
       <Table>
@@ -27,7 +34,9 @@ export function TicketList({ tickets }: { tickets: Ticket[] }) {
             <TableRow key={ticket.id}>
               <TableCell className="font-medium">{ticket.id}</TableCell>
               <TableCell>
-                <Link href={`/tickets/details/${ticket.id}`}>
+                <Link
+                  href={tenantPath(`/tickets/details/${ticket.id}`, tenant)}
+                >
                   {ticket.title}
                 </Link>
               </TableCell>

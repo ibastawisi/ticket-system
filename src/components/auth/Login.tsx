@@ -15,15 +15,20 @@ import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
+import { tenantPath } from "@/utils/url";
 
 export const Login: React.FC<
   {
+    tenant: string;
+    tenantName: string;
     isPasswordLogin?: boolean;
     isPasswordReset?: boolean;
     errorMessage?: string | string[];
     successMessage?: string | string[];
   } & React.ComponentPropsWithoutRef<"div">
 > = ({
+  tenant,
+  tenantName,
   isPasswordLogin,
   isPasswordReset,
   errorMessage,
@@ -50,7 +55,6 @@ export const Login: React.FC<
         password,
       });
       if (error) throw error;
-      router.push("/tickets");
     } catch (error: unknown) {
       setError(error instanceof Error ? error.message : "An error occurred");
     } finally {
@@ -64,7 +68,12 @@ export const Login: React.FC<
       data: { subscription },
     } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === "SIGNED_IN") {
-        router.push("/tickets");
+        if (session?.user.app_metadata.tenants?.includes(tenant)) {
+          router.push(tenantPath("/tickets", tenant));
+        } else {
+          supabase.auth.signOut();
+          setError("You are not authorized to access this tenant.");
+        }
       }
     });
     return () => subscription.unsubscribe();
@@ -74,19 +83,28 @@ export const Login: React.FC<
     <div className={cn("flex flex-col gap-6", className)} {...props}>
       <Card>
         <CardHeader>
-          <CardTitle className="text-2xl">Login</CardTitle>
+          <CardTitle>
+            <p className="text-2xl">Login</p>
+            <span className="text-sm text-muted-foreground">{tenantName}</span>
+          </CardTitle>
           <CardDescription>
-            Enter your {isPasswordLogin ? "credentials" : "email"} to {isPasswordReset ? "request a password reset" : isPasswordLogin ? "login" : "receive a magic link" }.
+            Enter your {isPasswordLogin ? "credentials" : "email"} to{" "}
+            {isPasswordReset
+              ? "request a password reset"
+              : isPasswordLogin
+              ? "login"
+              : "receive a magic link"}
+            .
           </CardDescription>
         </CardHeader>
         <CardContent>
           <form
             action={
               isPasswordLogin
-                ? "/auth/password-login"
+                ? tenantPath("/auth/password-login", tenant)
                 : isPasswordReset
-                ? "/auth/password-reset"
-                : "/auth/magic-link"
+                ? tenantPath("/auth/password-reset", tenant)
+                : tenantPath("/auth/magic-link", tenant)
             }
             method="POST"
             onSubmit={handleSubmit}
@@ -109,12 +127,6 @@ export const Login: React.FC<
                 <div className="grid gap-2">
                   <div className="flex items-center">
                     <Label htmlFor="password">Password</Label>
-                    <Link
-                      href="/login?type=password-reset"
-                      className="ml-auto inline-block text-sm underline-offset-4 hover:underline"
-                    >
-                      Forgot your password?
-                    </Link>
                   </div>
                   <Input
                     id="password"
@@ -124,6 +136,12 @@ export const Login: React.FC<
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                   />
+                  <Link
+                    href={tenantPath("/login?type=password-reset", tenant)}
+                    className="ml-auto inline-block text-sm underline-offset-4 hover:underline"
+                  >
+                    Forgot your password?
+                  </Link>
                 </div>
               )}
               <p className="text-sm min-h-5">
@@ -132,26 +150,27 @@ export const Login: React.FC<
                 <span className="text-red-500">{errorMessage}</span>
               </p>
               <Button type="submit" className="w-full" disabled={isLoading}>
-                {
-                  isPasswordLogin
-                    ? "Login"
-                    : isPasswordReset
-                    ? "Reset Password"
-                    : "Send Magic Link"
-                }
+                {isPasswordLogin
+                  ? "Login"
+                  : isPasswordReset
+                  ? "Reset Password"
+                  : "Send Magic Link"}
               </Button>
             </div>
 
             <div className="mt-4 text-center text-sm">
               {isPasswordLogin ? (
                 <Link
-                  href="/login?type=magic-link"
+                  href={tenantPath("/login?type=magic-link", tenant)}
                   className="underline underline-offset-4"
                 >
                   Login with Magic Link
                 </Link>
               ) : (
-                <Link href="/login" className="underline underline-offset-4">
+                <Link
+                  href={tenantPath("/login", tenant)}
+                  className="underline underline-offset-4"
+                >
                   Login with Password
                 </Link>
               )}

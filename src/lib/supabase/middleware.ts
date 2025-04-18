@@ -30,9 +30,18 @@ export async function updateSession(request: NextRequest) {
     }
   );
 
-  const session = await supabase.auth.getSession();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  const [hostname, port] = request.headers.get("host")!.split(":");
+  const tenant = hostname.split(".").length > 1 ? hostname.split(".")[0] : "packt";
   const pathname = request.nextUrl.pathname;
-  const user = session.data?.session?.user;
+
+  if (
+    (user && !user.app_metadata.tenants?.includes(tenant))
+  ) {
+    return NextResponse.rewrite(new URL("/not-found", request.url));
+  }
 
   if (
     !user &&
@@ -41,15 +50,17 @@ export async function updateSession(request: NextRequest) {
     !pathname.startsWith("/auth")
   ) {
     const url = request.nextUrl.clone();
-    url.pathname = "/login";
+    url.pathname = `/login`;
     return NextResponse.redirect(url);
   }
 
   if (user && pathname === "/") {
     const url = request.nextUrl.clone();
-    url.pathname = "/tickets";
+    url.pathname = `/tickets`;
     return NextResponse.redirect(url);
   }
 
-  return supabaseResponse;
+  const url = request.nextUrl.clone();
+  url.pathname = `/${tenant}${pathname}`;
+  return NextResponse.rewrite(url, supabaseResponse);
 }

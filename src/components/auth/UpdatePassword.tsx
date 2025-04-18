@@ -14,11 +14,17 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { tenantPath } from "@/utils/url";
 
 export function UpdatePassword({
+  tenant,
+  tenantName,
   className,
   ...props
-}: React.ComponentPropsWithoutRef<"div">) {
+}: {
+  tenant: string;
+  tenantName: string;
+} & React.ComponentPropsWithoutRef<"div">) {
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -33,7 +39,7 @@ export function UpdatePassword({
     try {
       const { error } = await supabase.auth.updateUser({ password });
       if (error) throw error;
-      router.push("/tickets");
+      router.push(tenantPath("/tickets", tenant));
     } catch (error: unknown) {
       setError(error instanceof Error ? error.message : "An error occurred");
     } finally {
@@ -45,7 +51,10 @@ export function UpdatePassword({
     <div className={cn("flex flex-col gap-6", className)} {...props}>
       <Card>
         <CardHeader>
-          <CardTitle className="text-2xl">Reset Your Password</CardTitle>
+          <CardTitle>
+            <p className="text-2xl">Update Password</p>
+            <span className="text-sm text-muted-foreground">{tenantName}</span>
+          </CardTitle>
           <CardDescription>
             Please enter your new password below.
           </CardDescription>
