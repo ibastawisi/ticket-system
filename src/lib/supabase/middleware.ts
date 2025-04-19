@@ -2,6 +2,8 @@ import { Database } from "@/types/database";
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
+const ROOT_TENANT = process.env.ROOT_TENANT;
+
 export async function updateSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({
     request,
@@ -34,7 +36,7 @@ export async function updateSession(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
   const [hostname] = request.headers.get("host")!.split(":");
-  const tenant = hostname.split(".").length > 1 ? hostname.split(".")[0] : "tms";
+  const tenant = hostname.split(".").length > 1 ? hostname.split(".")[0] : ROOT_TENANT ?? "tms";
   const pathname = request.nextUrl.pathname;
 
   if (

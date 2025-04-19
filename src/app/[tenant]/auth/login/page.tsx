@@ -10,8 +10,6 @@ export default async function LoginPage({
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
   const { tenant } = await params;
-  const magicLink = (await searchParams).type === "magic-link";
-  const passwordReset = (await searchParams).type === "password-reset";
   const errorMessage = (await searchParams).error;
   const successMessage = (await searchParams).success;
 
@@ -32,8 +30,6 @@ export default async function LoginPage({
         <Login
           tenant={tenant}
           tenantName={data?.name ?? tenant}
-          isPasswordLogin={!magicLink && !passwordReset}
-          isPasswordReset={passwordReset}
           errorMessage={errorMessage}
           successMessage={successMessage}
         />
