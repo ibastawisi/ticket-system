@@ -4,7 +4,6 @@ const nextConfig: NextConfig = {
   eslint: {
     ignoreDuringBuilds: true,
   },
-  allowedDevOrigins: ["packt.local"],
   redirects: async () => [
     {
       source: "/login",

@@ -17,8 +17,8 @@ export default async function TenantName(props: { tenant: string }) {
           href="/"
           className="border-l-4 border-orange-500 pl-2.5 py-1 text-[1.1em]"
         >
-          Ticket System
           <strong className="ml-1">{data?.name ?? "Unknown Tenant"}</strong>
+          Ticket System
         </Link>
       </CardContent>
     </Card>

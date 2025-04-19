@@ -83,9 +83,13 @@ export const Login: React.FC<
     <div className={cn("flex flex-col gap-6", className)} {...props}>
       <Card>
         <CardHeader>
-          <CardTitle>
-            <p className="text-2xl">Login</p>
-            <span className="text-sm text-muted-foreground">{tenantName}</span>
+          <CardTitle className="text-2xl">
+            <span className="text-muted-foreground">{tenantName}</span>{" "}
+            {isPasswordReset
+              ? "Reset Password"
+              : isPasswordLogin
+              ? "Login"
+              : "Magic Link"}
           </CardTitle>
           <CardDescription>
             Enter your {isPasswordLogin ? "credentials" : "email"} to{" "}

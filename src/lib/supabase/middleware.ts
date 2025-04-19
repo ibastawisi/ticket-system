@@ -33,8 +33,8 @@ export async function updateSession(request: NextRequest) {
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  const [hostname, port] = request.headers.get("host")!.split(":");
-  const tenant = hostname.split(".").length > 1 ? hostname.split(".")[0] : "packt";
+  const [hostname] = request.headers.get("host")!.split(":");
+  const tenant = hostname.split(".").length > 1 ? hostname.split(".")[0] : "tms";
   const pathname = request.nextUrl.pathname;
 
   if (
